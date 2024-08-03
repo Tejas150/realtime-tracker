@@ -14,3 +14,9 @@ html, body{
     width: 100%;
     height: 100%;
 }
+
+.custom-icon {
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
