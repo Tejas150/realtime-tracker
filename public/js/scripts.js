@@ -1,22 +1,11 @@
 const socket = io()
 
-let clientMarkers = {}
-let clientRoutingControls = {}
-
-const map = L.map('map').setView([0,0], 16)
-
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: 'Map'
-    }
-).addTo(map)
-
 if(navigator.geolocation) {
     navigator.geolocation.watchPosition(
         // callback
         (position) => {
         const { latitude, longitude } = position.coords
-
-        socket.emit('send-location', { latitude, longitude, clientMarkers, clientRoutingControls })
+        socket.emit('send-location', { latitude, longitude })
 
         },
         // error
@@ -32,8 +21,17 @@ if(navigator.geolocation) {
     )
 }
 
+const map = L.map('map').setView([0,0], 16)
 
-socket.on('recieve-location', ({id, latitude, longitude, markers, routingControls}) => {
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: 'Map'
+    }
+).addTo(map)
+
+const markers = {}
+let routingControls = {}
+
+socket.on('recieve-location', ({id, latitude, longitude}) => {
     map.setView([latitude, longitude])
 
     if(markers[id]) {
@@ -43,8 +41,6 @@ socket.on('recieve-location', ({id, latitude, longitude, markers, routingControl
         markers[id] = L.marker([latitude, longitude]).addTo(map)
     }
 
-    clientMarkers = {...clientMarkers, ...markers}
-    
     // get the current user's marker
     const currentUserMarker = markers[socket.id]
 
@@ -73,15 +69,17 @@ socket.on('recieve-location', ({id, latitude, longitude, markers, routingControl
                 }
             }
         })
-
-        clientRoutingControls = {...clientRoutingControls, ...routingControls}
     }
 })
 
 socket.on('user-disconnected', (id) => {
     if(markers[id]) {
         map.removeLayer(markers[id])
-        delete routingControls[id]
         delete markers[id]
+    }
+
+    if (routingControls[id]) {
+        map.removeControl(routingControls[id])
+        delete routingControls[id] 
     }
 })
