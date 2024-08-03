@@ -28,3 +28,5 @@ app.get('/', (req, res) => {
 })
 
 server.listen(8080)
+
+module.exports = server;
