@@ -29,6 +29,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 ).addTo(map)
 
 const markers = {}
+let routingControls = {}
 
 socket.on('recieve-location', ({id, latitude, longitude}) => {
     map.setView([latitude, longitude])
@@ -47,7 +48,25 @@ socket.on('recieve-location', ({id, latitude, longitude}) => {
     if (currentUserMarker) {
         Object.keys(markers).forEach(id => {
             if(id != socket.id) {
-                drawRoute(currentUserMarker.getLatLng(), markers[id].getLatLng())
+                if (routingControls[id]) {
+                    // Update the existing route
+                    routingControls[id].setWaypoints([
+                        L.latLng(currentUserMarker.getLatLng().lat, currentUserMarker.getLatLng().lng),
+                        L.latLng(markers[id].getLatLng().lat, markers[id].getLatLng().lng)
+                    ])
+                } else {
+                    // Create a new route
+                    routingControls[id] = L.Routing.control({
+                        waypoints: [
+                            L.latLng(currentUserMarker.getLatLng().lat, currentUserMarker.getLatLng().lng),
+                            L.latLng(markers[id].getLatLng().lat, markers[id].getLatLng().lng)
+                        ],
+                        router: L.Routing.osrmv1({
+                            serviceUrl: 'https://router.project-osrm.org/route/v1'
+                        }),
+                        routeWhileDragging: false
+                    }).addTo(map)
+                }
             }
         })
     }
@@ -56,20 +75,7 @@ socket.on('recieve-location', ({id, latitude, longitude}) => {
 socket.on('user-disconnected', (id) => {
     if(markers[id]) {
         map.removeLayer(markers[id])
+        delete routingControls[id]
         delete markers[id]
     }
 })
-
-// function to draw a route between two points
-function drawRoute(from, to) {
-    L.Routing.control({
-        waypoints: [
-            L.latLng(from.lat, from.lng),
-            L.latLng(to.lat, to.lng)
-        ],
-        router: L.Routing.osrmv1({
-            serviceUrl: 'https://router.project-osrm.org/route/v1'
-        }),
-        routeWhileDragging: false
-    }).addTo(map)
-}
