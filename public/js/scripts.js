@@ -28,6 +28,8 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     }
 ).addTo(map)
 
+const routingControlLayer = L.layerGroup().addTo(map);
+
 const markers = {}
 let routingControls = {}
 
@@ -65,7 +67,8 @@ socket.on('recieve-location', ({id, latitude, longitude}) => {
                             serviceUrl: 'https://router.project-osrm.org/route/v1'
                         }),
                         routeWhileDragging: false
-                    }).addTo(map)
+                    });
+                    routingControlLayer.addLayer(routingControls[id]);
                 }
             }
         })
@@ -79,7 +82,7 @@ socket.on('user-disconnected', (id) => {
     }
 
     if (routingControls[id]) {
-        map.removeControl(routingControls[id])
+        routingControlLayer.removeLayer(routingControls[id])
         delete routingControls[id] 
     }
 })
