@@ -72,10 +72,34 @@ function resetCurrentMarker() {
   }
 }
 
+// Function to calculate and display route between two markers
+function calculateRoute(fromMarker, toMarker) {
+  const fromLatLng = fromMarker.getLatLng();
+  const toLatLng = toMarker.getLatLng();
+
+  L.Routing.control({
+    waypoints: [
+      L.latLng(fromLatLng.lat, fromLatLng.lng),
+      L.latLng(toLatLng.lat, toLatLng.lng)
+    ],
+    router: L.Routing.osrmv1({
+      serviceUrl: 'https://router.project-osrm.org/route/v1'
+    }),
+    routeWhileDragging: false
+  }).addTo(map);
+}
+
 // Set up event listeners for socket.io events
 socket.on('recieve-location', ({ id, latitude, longitude, iconUrl }) => {
   map.setView([latitude, longitude]);
   createMarker(id, latitude, longitude, iconUrl);
+
+  // Calculate and display route to new marker from all existing markers
+  Object.values(markers).forEach((marker) => {
+    if (marker !== markers[id]) {
+      calculateRoute(marker, markers[id]);
+    }
+  });
 });
 
 socket.on('user-disconnected', (id) => {
