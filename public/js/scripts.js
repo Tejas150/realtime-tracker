@@ -75,6 +75,7 @@ function removeRoute(id) {
 // Function to reset the current marker
 function resetCurrentMarker() {
   if (currentMarker) {
+    customIcon.iconUrl = currentMarker.originalIconUrl
     currentMarker.setIcon(L.icon(customIcon))
     currentMarker = null
   }
