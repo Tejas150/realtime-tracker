@@ -1,11 +1,22 @@
 const socket = io()
 
+let markers = {}
+let routingControls = {}
+
+const map = L.map('map').setView([0,0], 16)
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: 'Map'
+    }
+).addTo(map)
+
 if(navigator.geolocation) {
     navigator.geolocation.watchPosition(
         // callback
         (position) => {
         const { latitude, longitude } = position.coords
-        socket.emit('send-location', { latitude, longitude })
+
+        socket.emit('send-location', { latitude, longitude, routingControls, markers })
 
         },
         // error
@@ -21,17 +32,8 @@ if(navigator.geolocation) {
     )
 }
 
-const map = L.map('map').setView([0,0], 16)
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: 'Map'
-    }
-).addTo(map)
-
-const markers = {}
-let routingControls = {}
-
-socket.on('recieve-location', ({id, latitude, longitude}) => {
+socket.on('recieve-location', ({id, latitude, longitude, markers, routingControls}) => {
     map.setView([latitude, longitude])
 
     if(markers[id]) {
