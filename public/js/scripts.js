@@ -32,8 +32,6 @@ function getRandomNumber() {
 // Function to create a new marker
 function createMarker(id, latitude, longitude, iconUrl) {
   const marker = L.marker([latitude, longitude], { icon: L.icon({...customIcon, iconUrl}) })
-  marker.addTo(map)
-  markers[id] = marker
 
   // Add event listener to marker
   marker.on('click', () => {
@@ -48,6 +46,10 @@ function createMarker(id, latitude, longitude, iconUrl) {
     }))
     currentMarker = marker
   })
+
+  marker.addTo(map)
+  markers[id] = marker
+
 }
 
 // Function to update a marker's position
@@ -93,7 +95,7 @@ function calculateRoute(fromMarker, toMarker, id) {
     ])
   }
   else {
-      routingControl[id] = L.Routing.control({
+      routingControls[id] = L.Routing.control({
         waypoints: [
           L.latLng(fromLatLng.lat, fromLatLng.lng),
           L.latLng(toLatLng.lat, toLatLng.lng)
