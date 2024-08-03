@@ -1,7 +1,7 @@
 const socket = io()
 
-let markers = {}
-let routingControls = {}
+let clientMarkers = {}
+let clientRoutingControls = {}
 
 const map = L.map('map').setView([0,0], 16)
 
@@ -16,7 +16,7 @@ if(navigator.geolocation) {
         (position) => {
         const { latitude, longitude } = position.coords
 
-        socket.emit('send-location', { latitude, longitude, routingControls, markers })
+        socket.emit('send-location', { latitude, longitude, clientMarkers, clientRoutingControls })
 
         },
         // error
@@ -43,6 +43,8 @@ socket.on('recieve-location', ({id, latitude, longitude, markers, routingControl
         markers[id] = L.marker([latitude, longitude]).addTo(map)
     }
 
+    clientMarkers = {...clientMarkers, ...markers}
+    
     // get the current user's marker
     const currentUserMarker = markers[socket.id]
 
@@ -71,6 +73,8 @@ socket.on('recieve-location', ({id, latitude, longitude, markers, routingControl
                 }
             }
         })
+
+        clientRoutingControls = {...clientRoutingControls, ...routingControls}
     }
 })
 
