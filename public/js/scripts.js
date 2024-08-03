@@ -103,7 +103,16 @@ function calculateRoute(fromMarker, toMarker, id) {
         router: L.Routing.osrmv1({
           serviceUrl: 'https://router.project-osrm.org/route/v1'
         }),
-        routeWhileDragging: false
+        routeWhileDragging: false,
+        createMarker: function(i, wp) {
+            return L.marker(wp.latLng, {
+              icon: L.divIcon({
+                className: 'dummy-marker',
+                html: '<div style="display: none;"></div>',
+                iconSize: [0, 0]
+              })
+            })
+          }  
       }).addTo(map)
   }
 
