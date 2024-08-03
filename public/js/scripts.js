@@ -15,22 +15,22 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const iconUrl = `assets/${getRandomNumber()}.png`
 // Set up custom icon
-const customIcon = L.icon({
+const customIcon = {
   iconUrl: iconUrl,
   iconSize: [50, 50],
   iconAnchor: [25, 25],
   popupAnchor: [0, -30],
   tooltipAnchor: [20, -20],
   className: 'custom-icon',
-});
+}
 
 function getRandomNumber() {
     return Math.floor(Math.random() * 9) + 1;
 }
 
 // Function to create a new marker
-function createMarker(id, latitude, longitude) {
-  const marker = L.marker([latitude, longitude], { icon: customIcon });
+function createMarker(id, latitude, longitude, iconUrl) {
+  const marker = L.marker([latitude, longitude], { icon: L.icon({...customIcon, iconUrl}) });
   marker.addTo(map);
   markers[id] = marker;
 
@@ -67,24 +67,23 @@ function removeMarker(id) {
 // Function to reset the current marker
 function resetCurrentMarker() {
   if (currentMarker) {
-    currentMarker.setIcon(customIcon);
-    // currentMarker = null;
+    currentMarker.setIcon(L.icon(customIcon));
+    currentMarker = null;
   }
 }
 
 // Set up event listeners for socket.io events
-socket.on('recieve-location', ({ id, latitude, longitude }) => {
+socket.on('recieve-location', ({ id, latitude, longitude, iconUrl }) => {
   map.setView([latitude, longitude]);
-  createMarker(id, latitude, longitude);
+  createMarker(id, latitude, longitude, iconUrl);
 });
 
 socket.on('user-disconnected', (id) => {
   removeMarker(id);
 });
 
-// Set up event listener for map click
 map.on('click', () => {
-  resetCurrentMarker();
+    resetCurrentMarker();
 });
 
 // Set up geolocation
@@ -92,7 +91,7 @@ if (navigator.geolocation) {
   navigator.geolocation.watchPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
-      socket.emit('send-location', { latitude, longitude });
+      socket.emit('send-location', { latitude, longitude, iconUrl });
     },
     (error) => {
       console.error(error);
