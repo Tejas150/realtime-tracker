@@ -68,7 +68,8 @@ socket.on('recieve-location', ({id, latitude, longitude}) => {
                         }),
                         routeWhileDragging: false
                     });
-                    routingControlLayer.addLayer(routingControls[id]);
+                    // Add the control to the map instead of the layer group
+                    map.addControl(routingControls[id]);
                 }
             }
         })
@@ -82,7 +83,8 @@ socket.on('user-disconnected', (id) => {
     }
 
     if (routingControls[id]) {
-        routingControlLayer.removeLayer(routingControls[id])
+        // Remove the control from the map
+        map.removeControl(routingControls[id])
         delete routingControls[id] 
     }
 })
